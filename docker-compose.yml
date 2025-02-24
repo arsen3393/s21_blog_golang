@@ -1,0 +1,18 @@
+services:
+  postgres_day06:
+    image: postgres:latest
+    container_name: postgres_day06
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: my_blog
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres_day06
+    volumes:
+      - ./database/migrations/admin_credentials.txt:/migrations/admin_credentials.txt
+      - ./database/migrations/posts_credentials.txt:/migrations/posts_credentials.txt
+    restart: unless-stopped
+networks:
+  postgres_day06:

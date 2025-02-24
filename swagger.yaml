@@ -1,0 +1,226 @@
+basePath: /
+definitions:
+  handler.GetUserByIdResponse:
+    properties:
+      email:
+        description: Email пользователя
+        type: string
+      name:
+        description: Имя пользователя
+        type: string
+    type: object
+  handler.PostResponse:
+    properties:
+      hasNext:
+        type: boolean
+      hasPrev:
+        type: boolean
+      pageSize:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      totalPage:
+        type: integer
+    type: object
+  handler.PutPostRequest:
+    properties:
+      body:
+        type: string
+      title:
+        type: string
+    required:
+    - body
+    - title
+    type: object
+  handler.PutPostResponse:
+    properties:
+      response:
+        type: string
+    type: object
+  handler.UserLoginRequest:
+    properties:
+      name:
+        description: Имя пользователя
+        type: string
+      password:
+        description: Пароль пользователя
+        type: string
+    required:
+    - name
+    - password
+    type: object
+  handler.UserLoginResponse:
+    properties:
+      token:
+        description: JWT токен пользователя
+        type: string
+    type: object
+  models.Post:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для управления блогом с JWT аутентификацией
+  title: Blog API
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список постов с пагинацией
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PostResponse'
+        "400":
+          description: Ошибка запроса
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получение постов
+      tags:
+      - posts
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя и генерирует JWT токен
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserLoginResponse'
+        "400":
+          description: Ошибка запроса
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Неверные учетные данные
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Авторизация пользователя
+      tags:
+      - users
+  /post/:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новый пост в блоге (нужен токен)
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные поста
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PutPostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PutPostResponse'
+        "400":
+          description: Ошибка запроса
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Неавторизован
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Создание поста
+      tags:
+      - posts
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает информацию о пользователе по заданному ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GetUserByIdResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Пользователь не найден
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получить пользователя по ID
+      tags:
+      - users
+swagger: "2.0"
